@@ -1,7 +1,6 @@
 import { StyleSheet, Button, TouchableOpacity, Text, Modal, View, TextInput } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import DatePicker from 'react-native-date-picker';
 
 export const ButtonSpecial = ({ onPress, title, style }) => {return(
   <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
@@ -28,8 +27,6 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
   const [notes, setNotes] = useState('');
   const [clientName, setClientName] = useState('');
   const [comments, setComments] = useState('');
-  const [date, setDate] = useState(new Date())
-  const [open, setOpen] = useState(false)
 
   return (
     <Modal
@@ -39,22 +36,6 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
     >
       <View style={styles.modalView}>
       <CloseModal onPress={onClose} />
-      <View>
-        <Button title="Open" onPress={() => setOpen(true)} />
-        <DatePicker
-          modal
-          open={open}
-          date={date}
-          mode="date"
-          onConfirm={(date) => {
-            setOpen(false)
-            setDate(date)
-          }}
-          onCancel={() => {
-            setOpen(false)
-          }}
-        />
-      </View>
         <TextInput
           style={styles.input}
           placeholder="Услуга"
