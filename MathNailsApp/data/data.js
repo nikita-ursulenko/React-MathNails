@@ -77,9 +77,6 @@ export async function getAllServices() {
     // Если данные есть, парсим их из JSON
     const services = servicesJson ? JSON.parse(servicesJson) : [];
 
-    // Выводим полученные данные в консоль для отладки
-    console.log(services);
-
     // Возвращаем список услуг
     return services;
   } catch (error) {
@@ -143,4 +140,34 @@ export async function updateServiceById(id, newName, newCost) {
       throw error;
     }
   }
+
+// Сохранение в ДБ
+export const saveDataToDB = async (data) => {
+  try {
+    const formattedDate = data.formattedDate;
+    const workDoneString = await AsyncStorage.getItem('workDone');
+    let workDone = workDoneString ? JSON.parse(workDoneString) : {};
+
+    if (!workDone[formattedDate]) {
+      workDone[formattedDate] = [];
+    }
+    workDone[formattedDate].push(data);
+
+    await AsyncStorage.setItem('workDone', JSON.stringify(workDone));
+    console.log('Data saved successfully!');
+  } catch (error) {
+    console.error('Error saving data:', error);
+  }
+};
+// Получение данных из ДБ
+export const getDataFromDB = async () => {
+  try {
+    const workDoneString = await AsyncStorage.getItem('workDone');
+    const workDone = workDoneString ? JSON.parse(workDoneString) : {};
+    return workDone;
+  } catch (error) {
+    console.error('Error getting data:', error);
+    throw error;
+  }
+};
   

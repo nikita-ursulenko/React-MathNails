@@ -17,16 +17,17 @@ export const AddButton = ({ onPress }) => {return (
     </TouchableOpacity>
   );
 };
+
 export const CloseModal = ({ onPress }) => {return (
   <TouchableOpacity style={styles.closeButton} onPress={onPress}>
     <AntDesign name="closecircle" size={40} color="red" />
   </TouchableOpacity>
 )};
-
+// Для экрана EnrtyScreen.js прии добавления данных
 export const CustomModal = ({ visible, onClose, onAdd }) => {
   const [service, setService] = useState('');
   const [cost, setCost] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('Cash');
   const [notes, setNotes] = useState('');
   const [clientName, setClientName] = useState('');
   const [comments, setComments] = useState('');
@@ -36,9 +37,9 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
   const [services, setServices] = useState([]);
   const [selectedService, setSelectedService] = useState(null);
   const [showSelectedPicker, setShowSelectedPicker] = useState(false);
+  const [payWithCash, setPayWithCash] = useState(true);
+  const [payWithCard, setPayWithCard] = useState(false);
 
-  const [isCashSelected, setIsCashSelected] = useState(false);
-  const [isCardSelected, setIsCardSelected] = useState(false);
 
 
   useEffect(() => {
@@ -71,125 +72,174 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
 
   const handleClearInput = () => {
     setDate(new Date());
+    setFormattedDate(formatDate(new Date()));
     setSelectedService(null);
     setService('');
     setCost('');
     setPaymentMethod('');
+    setPayWithCash(true);
+    setPayWithCard(false);
     setNotes('');
     setClientName('');
     setComments('');
-    setFormattedDate(formatDate(new Date()));
+  };
+
+  const handlePayMethod = (method) => {
+    if (method === 'Cash') {
+      setPayWithCash(true);
+      setPayWithCard(false);
+      setPaymentMethod('Cash');
+    } else {
+      setPayWithCash(false);
+      setPayWithCard(true);
+      setPaymentMethod('Card');
+    }
   };
 
   const togglePicker = () => {
     setShowDatePicker(!showDatePicker);
   };
+
   const togglePickerServices = () => {
     setSelectedService(null); // Сбрасываем выбранную услугу при закрытии модального окна
     setShowSelectedPicker(false);
   };
 
+  const handleAdd = () => {
+    // Ваши действия по добавлению данных
+    const data = {
+      service,
+      cost,
+      paymentMethod,
+      notes,
+      clientName,
+      comments,
+      date,
+      formattedDate,
+    };
+    onAdd(data); // Вызываем переданную функцию onAdd с данными
+    // onClose(); 
+  };
 
-  return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={visible}
-    >
-    <View style={styles.modalView}>
-      <CloseModal onPress={() => {onClose(); handleClearInput();}} />
-      {showDatePicker && (
-        <Modal>
-          <View style={styles.centerStyle}>
-            <DateTimePicker
-              testID="dateTimePicker"
-              value={date}
-              mode="date"
-              display="spinner"
-              onChange={onChange}
-            />
-            <ButtonSpecial 
-            title="Подтвердить" 
-            onPress={togglePicker}
-            style={{marginTop: "30%"}}
-            />
-          </View>
-        </Modal>
-        )}
-        <TextInput
-          style={styles.input}
-          onChangeText={setFormattedDate}
-          value={formattedDate}
-          onPressIn={togglePicker}
-        />
-        {showSelectedPicker && (
-        <Modal>
-          <View style={{height: "100%", justifyContent: "center"}}>
-            <CloseModal onPress={togglePickerServices}/>
-            <Picker 
-                selectedValue={selectedService}
-                onValueChange={(itemValue) => {
-                  console.log("Selected service:", services[itemValue -1]);
-                  setSelectedService(itemValue);
-                  setCost(services[itemValue - 1].cost.toString());
-                }}>
-                {renderServiceItems()}
-            </Picker>
-            <View style={{alignItems: "center"}}>
+  return {
+    modalContent: (
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={visible}
+      >
+      <View style={styles.modalView}>
+        <CloseModal onPress={() => {onClose(); handleClearInput();}} />
+        {showDatePicker && (
+          <Modal>
+            <View style={styles.centerStyle}>
+              <DateTimePicker
+                testID="dateTimePicker"
+                value={date}
+                mode="date"
+                display="spinner"
+                onChange={onChange}
+              />
               <ButtonSpecial 
-              title={"Подтвердить"} 
-              style={{width: "40%", }}
-              onPress={() => setShowSelectedPicker(false)}
+              title="Подтвердить" 
+              onPress={togglePicker}
+              style={{marginTop: "30%"}}
               />
             </View>
+          </Modal>
+          )}
+          <TextInput
+            style={styles.input}
+            onChangeText={setFormattedDate}
+            value={formattedDate}
+            onPressIn={togglePicker}
+          />
+          {showSelectedPicker && (
+          <Modal>
+            <View style={{height: "100%", justifyContent: "center"}}>
+              <CloseModal onPress={togglePickerServices}/>
+              <Picker 
+                  selectedValue={selectedService}
+                  onValueChange={(itemValue) => {
+                    console.log("Selected service:", services[itemValue -1]);
+                    setSelectedService(itemValue);
+                    setService(services[itemValue - 1])
+                    setCost(services[itemValue - 1].cost.toString());
+                  }}>
+                  {renderServiceItems()}
+              </Picker>
+              <View style={{alignItems: "center"}}>
+                <ButtonSpecial 
+                title={"Подтвердить"} 
+                style={{width: "40%", }}
+                onPress={() => setShowSelectedPicker(false)}
+                />
+              </View>
+            </View>
+          </Modal>
+          )}
+          <TextInput
+            style={styles.input}
+            placeholder="Услуга"
+            value={selectedService ? services[selectedService -1].name : null }
+            onChangeText={setService}
+            onPressIn={() => setShowSelectedPicker(true)}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Стоимость"
+            value={cost}
+            onChangeText={setCost}
+            keyboardType="numeric"
+          />
+          <View style={styles.container}>
+            <View style={styles.section}>
+                <AntDesign
+                name={payWithCash ? 'checkcircle' : 'checkcircleo'}
+                size={32}
+                color="black"
+                onPress={() => handlePayMethod('Cash')}
+                style={styles.icon}
+              />
+              <Text style={styles.paragraph}>Cash</Text>
+            </View>
+            <View style={styles.section}>
+                <AntDesign
+                name={payWithCard ? 'checkcircle' : 'checkcircleo'}
+                size={32}
+                color="black"
+                onPress={() => handlePayMethod('Card')}
+                style={styles.icon}
+              />
+              <Text style={styles.paragraph}>Card</Text>
+            </View>
           </View>
-        </Modal>
-        )}
-        <TextInput
-          style={styles.input}
-          placeholder="Услуга"
-          value={selectedService ? services[selectedService -1].name : null }
-          onChangeText={setService}
-          onPressIn={() => setShowSelectedPicker(true)}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Стоимость"
-          value={cost}
-          onChangeText={setCost}
-          keyboardType="numeric"
-        />
-        <View style={{width: "80%"}}>
-          <Picker
-            selectedValue={paymentMethod}
-            onValueChange={(itemValue, itemIndex) => setPaymentMethod(itemValue)} >
-            <Picker.Item label="Card" value="Card" />
-            <Picker.Item label="Bar" value="Bar" />
-          </Picker>
+          <TextInput
+            style={styles.input}
+            placeholder="Чаевые"
+            value={notes}
+            onChangeText={setNotes}
+            keyboardType="numeric"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Имя клиента"
+            value={clientName}
+            onChangeText={setClientName}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Комментарии"
+            value={comments}
+            onChangeText={setComments}
+          />
+          <ButtonSpecial style={{marginTop: 20}}title={"Добавить"} onPress={handleAdd}/>
         </View>
-        <TextInput
-          style={styles.input}
-          placeholder="Чаевые"
-          value={notes}
-          onChangeText={setNotes}
-          keyboardType="numeric"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Имя клиента"
-          value={clientName}
-          onChangeText={setClientName}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Комментарии"
-          value={comments}
-          onChangeText={setComments}
-        />
-        <ButtonSpecial title={"Добавить"} onPress={onAdd}/>
-      </View>
-    </Modal>
-  );
+      </Modal>
+  ),
+    data: {},
+    onAdd: handleAdd, // Функция для добавления данных
+  };
 };
 
 const styles = StyleSheet.create({
@@ -250,7 +300,25 @@ const styles = StyleSheet.create({
     height: "100%",
     justifyContent: "center",
     alignItems: "center",
-  }
+  },
+
+
+
+  container: {
+    marginVertical: 10,
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-around"
+  },
+  section: {
+    alignItems: 'center',
+  },
+  paragraph: {
+    fontSize: 20,
+  },
+  checkbox: {
+    margin: 8,
+  },
 });
 
 

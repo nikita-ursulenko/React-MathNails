@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation, Platform, UIManager } from 'react-native';
-import { AddButton, CustomModal, } from '../components/components';
-
-// Enable LayoutAnimation on Android
-if (
-  Platform.OS === 'android' &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+import { AddButton, ButtonSpecial, CustomModal, } from '../components/components';
+import { getDataFromDB, saveDataToDB } from '../data/data';
 
 const ExpandableSection = ({ title, children }) => {
   const [expanded, setExpanded] = useState(false);
@@ -29,12 +22,39 @@ const ExpandableSection = ({ title, children }) => {
   );
 };
 
+
 const YourComponent = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  
+
+// Состояние модального окна
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
+  // Ручное добавление данных
+  const handleAdd = (data) => {
+    // Здесь вы можете использовать полученные данные
+    console.log('Received data:', data);
+    saveDataToDB(data);
+    loadWorkDone();
+  };
+  // Загрузка данных из ДБ
+  const loadWorkDone = async () => {
+    const workDone = await getDataFromDB();
+    if (workDone) {
+      console.log('Work done:', workDone);
+      // Делайте что-то с полученными данными здесь
+    } else {
+      console.log('No data found in the database.');
+    }
+  };
+
+  // Получение данных, из компонент
+  const { modalContent} = CustomModal({
+    visible: isModalVisible,
+    onClose: toggleModal,
+    onAdd: handleAdd,
+  });
+  
   return (
     <View style={styles.container}>
       <ExpandableSection title="день.месяц.год">
@@ -42,7 +62,8 @@ const YourComponent = () => {
         <Text style={styles.serviceItem}>Маникюр - 80€ - Card/Bar</Text>
         {/* Add more services as needed */}
       </ExpandableSection>
-        <CustomModal visible={isModalVisible}  onClose={toggleModal} onAdd={toggleModal}/>
+      <ButtonSpecial title={"Вывести"} onPress={loadWorkDone}/>
+      {modalContent}
       <AddButton onPress={toggleModal}/>
     </View>
     
