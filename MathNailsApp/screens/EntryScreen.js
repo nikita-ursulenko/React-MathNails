@@ -31,6 +31,7 @@ const ExpandableSection = ({ title, children }) => {
 
 const YourComponent = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
