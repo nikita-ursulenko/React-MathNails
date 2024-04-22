@@ -5,9 +5,9 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { getAllServices } from '../data/data';
 import { Picker } from '@react-native-picker/picker';
 
-export const ButtonSpecial = ({ onPress, title, style }) => {return(
+export const ButtonSpecial = ({ onPress, title, style, textStyle }) => {return(
   <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
-    <Text style={styles.buttonText}>{title}</Text>
+    <Text style={[styles.button, textStyle]}>{title}</Text>
   </TouchableOpacity>
 )};
 
@@ -27,7 +27,7 @@ export const CloseModal = ({ onPress }) => {return (
 export const CustomModal = ({ visible, onClose, onAdd }) => {
   const [service, setService] = useState('');
   const [cost, setCost] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('Cash');
+  const [paymentMethod, setPaymentMethod] = useState('Bar');
   const [notes, setNotes] = useState('');
   const [clientName, setClientName] = useState('');
   const [comments, setComments] = useState('');
@@ -37,7 +37,7 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
   const [services, setServices] = useState([]);
   const [selectedService, setSelectedService] = useState(null);
   const [showSelectedPicker, setShowSelectedPicker] = useState(false);
-  const [payWithCash, setPayWithCash] = useState(true);
+  const [payWithBar, setPayWithBar] = useState(true);
   const [payWithCard, setPayWithCard] = useState(false);
 
 
@@ -46,10 +46,11 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
     const today = new Date();
     setDate(today);
     setFormattedDate(formatDate(today));
+    console.log("Effect: ",date)
     getAllServices()
-      .then((data) => setServices(data))
-      .catch((error) => console.error('Error loading services:', error));
-  }, [showSelectedPicker]);
+    .then((data) => setServices(data))
+    .catch((error) => console.error('Error loading services:', error));
+  }, []);
 
   const renderServiceItems = () => {
     return services.map((service, index) => (
@@ -57,10 +58,10 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
     ));
   };
 
-  const onChange = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
-    setDate(currentDate);
-    setFormattedDate(formatDate(currentDate));
+  const onChange = (selectedDate) => {
+    setDate(selectedDate);
+    setFormattedDate(formatDate(selectedDate));
+    console.log("Эффект: ", selectedDate)
   };
 
   const formatDate = (date) => {
@@ -76,8 +77,8 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
     setSelectedService(null);
     setService('');
     setCost('');
-    setPaymentMethod('');
-    setPayWithCash(true);
+    setPaymentMethod('Bar');
+    setPayWithBar(true);
     setPayWithCard(false);
     setNotes('');
     setClientName('');
@@ -85,12 +86,12 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
   };
 
   const handlePayMethod = (method) => {
-    if (method === 'Cash') {
-      setPayWithCash(true);
+    if (method === 'Bar') {
+      setPayWithBar(true);
       setPayWithCard(false);
-      setPaymentMethod('Cash');
+      setPaymentMethod('Bar');
     } else {
-      setPayWithCash(false);
+      setPayWithBar(false);
       setPayWithCard(true);
       setPaymentMethod('Card');
     }
@@ -138,11 +139,11 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
                 value={date}
                 mode="date"
                 display="spinner"
-                onChange={onChange}
+                onChange={(event, selectedDate) => onChange(selectedDate)}
               />
               <ButtonSpecial 
               title="Подтвердить" 
-              onPress={togglePicker}
+              onPress={() => {togglePicker();}}
               style={{marginTop: "30%"}}
               />
             </View>
@@ -172,7 +173,14 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
                 <ButtonSpecial 
                 title={"Подтвердить"} 
                 style={{width: "40%", }}
-                onPress={() => setShowSelectedPicker(false)}
+                onPress={() => {
+                  setShowSelectedPicker(false);
+                  if (!selectedService) {
+                    setSelectedService(services[0].id);
+                    setService(services[0]);
+                    setCost(services[0].cost.toString());
+                  }
+                }}
                 />
               </View>
             </View>
@@ -195,19 +203,19 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
           <View style={styles.container}>
             <View style={styles.section}>
                 <AntDesign
-                name={payWithCash ? 'checkcircle' : 'checkcircleo'}
-                size={32}
-                color="black"
-                onPress={() => handlePayMethod('Cash')}
+                name={payWithBar ? 'checkcircle' : 'checkcircleo'}
+                size={40}
+                color="green"
+                onPress={() => handlePayMethod('Bar')}
                 style={styles.icon}
               />
-              <Text style={styles.paragraph}>Cash</Text>
+              <Text style={styles.paragraph}>Bar</Text>
             </View>
             <View style={styles.section}>
                 <AntDesign
                 name={payWithCard ? 'checkcircle' : 'checkcircleo'}
-                size={32}
-                color="black"
+                size={40}
+                color="blue"
                 onPress={() => handlePayMethod('Card')}
                 style={styles.icon}
               />
@@ -233,7 +241,11 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
             value={comments}
             onChangeText={setComments}
           />
-          <ButtonSpecial style={{marginTop: 20}}title={"Добавить"} onPress={handleAdd}/>
+          <ButtonSpecial 
+          style={{marginTop: 20, marginBottom: -20}}
+          textStyle={{fontSize: 24}} 
+          title={"Добавить"} 
+          onPress={() => {handleAdd(); onClose(); handleClearInput(); }}/>
         </View>
       </Modal>
   ),
@@ -242,12 +254,36 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
   };
 };
 
+export const ModalDialog = ({ visible, onClose, onEdit, onDelete }) => {
+  return (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={visible}
+      onRequestClose={onClose}
+    >
+      <View>
+        <View>
+          <ButtonSpecial
+            title="Изменить"
+            onPress={onEdit}
+            style={{ marginBottom: 10 }}
+          />
+          <ButtonSpecial title="Удалить" onPress={onDelete} />
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+
 const styles = StyleSheet.create({
   button: {
     backgroundColor: '#007bff', // Цвет фона кнопки
-    paddingVertical: 12, // Вертикальный отступ
-    paddingHorizontal: 24, // Горизонтальный отступ
+    paddingVertical: 6, // Вертикальный отступ
+    paddingHorizontal: 12, // Горизонтальный отступ
     borderRadius: 5, // Радиус скругления углов
+    alignItems: "center",
   },
   buttonText: {
     color: '#ffffff', // Цвет текста кнопки

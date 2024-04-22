@@ -24,7 +24,10 @@ const GeneralScreen = () => {
           </Modal>
         )
         }
-        <ButtonSpecial title="Открыть" onPress={togglePicker}/>
+        <ButtonSpecial 
+        textStyle={{fontSize: 20}}
+        title="Открыть" 
+        onPress={togglePicker}/>
       </View>
     );
 }

@@ -159,15 +159,66 @@ export const saveDataToDB = async (data) => {
     console.error('Error saving data:', error);
   }
 };
+
 // Получение данных из ДБ
 export const getDataFromDB = async () => {
   try {
     const workDoneString = await AsyncStorage.getItem('workDone');
-    const workDone = workDoneString ? JSON.parse(workDoneString) : {};
-    return workDone;
+    let workDone = workDoneString ? JSON.parse(workDoneString) : {};
+
+    // Преобразование даты для корректной сортировки
+    const sortedWorkDone = {};
+    Object.keys(workDone)
+      .sort((a, b) => {
+        const dateA = new Date(
+          parseInt(a.slice(-2)),
+          parseInt(a.slice(3, 5)) - 1,
+          parseInt(a.slice(0, 2))
+        );
+        const dateB = new Date(
+          parseInt(b.slice(-2)),
+          parseInt(b.slice(3, 5)) - 1,
+          parseInt(b.slice(0, 2))
+        );
+        return dateB - dateA;
+      })
+      .forEach((key) => {
+        sortedWorkDone[key] = workDone[key];
+      });
+
+    return sortedWorkDone;
   } catch (error) {
     console.error('Error getting data:', error);
     throw error;
   }
 };
-  
+
+// Удаление элемента из базы данных
+export const deleteItemFromDB = async (date, index) => {
+  try {
+    const workDoneString = await AsyncStorage.getItem('workDone');
+    let workDone = workDoneString ? JSON.parse(workDoneString) : {};
+
+    if (workDone[date] && workDone[date].length > index) {
+      workDone[date].splice(index, 1);
+
+      await AsyncStorage.setItem('workDone', JSON.stringify(workDone));
+      console.log('Item deleted successfully!');
+    } else {
+      console.log('Item not found in the database.');
+    }
+  } catch (error) {
+    console.error('Error deleting item:', error);
+  }
+};
+
+export const clearDataFromDB = async () => {
+  try {
+    await AsyncStorage.removeItem('workDone');
+    console.log('Data cleared successfully.');
+    return true;
+  } catch (error) {
+    console.error('Error clearing data:', error);
+    return false;
+  }
+};
