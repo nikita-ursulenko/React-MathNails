@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, Modal, TextInput, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
-import { AntDesign } from '@expo/vector-icons'; // Импорт иконки из библиотеки Expo Icons
-import { addService, getAllServices, deleteServiceById, updateServiceById } from '../data/data';
+import { View, Text, Modal, TextInput, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import DataBase from '../data/data';
 import { ButtonSpecial, AddButton, CloseModal } from '../components/components';
 
 const ServicesScreen = () => {
@@ -22,12 +21,12 @@ const ServicesScreen = () => {
       setServiceName(selectedService.name);
       setServicePrice(selectedService.cost ? selectedService.cost.toString() : '');
     };
-}, [selectedService]);
+  }, [selectedService]);
 
   // Загрузка услуг
   const loadServices = async () => {
     try {
-      const allServices = await getAllServices();
+      const allServices = await DataBase.Services.getAllServices();
       setServices(allServices);
     } catch (error) {
       console.error('Ошибка загрузки услуг:', error);
@@ -36,7 +35,7 @@ const ServicesScreen = () => {
   // Ручное добавления сервиса
   const handleAddService = async () => {
     try {
-      await addService(serviceName, servicePrice);
+      await DataBase.Services.addService(serviceName, servicePrice);
       loadServices(); // Обновляем список услуг после добавления новой
       toggleModalAdd(); // Закрываем модальное окно
       setErrorMessage('');
@@ -53,17 +52,12 @@ const ServicesScreen = () => {
   // Ручное удаление услуги 
   const handleDeleteService = async () => {
     try {
-      // Удаление услуги из базы данных
-      // Например, можно использовать функцию из вашего data.js
-      // На основе переданного id
-      console.log('Удаление услуги с id:', selectedServiceId);
-      
       // Вызываем функцию удаления услуги
-      await deleteServiceById(selectedServiceId);
-  
+      await DataBase.Services.deleteServiceById(selectedServiceId);
+
       // После удаления обновляем список услуг
       await loadServices();
-      
+
       // Закрываем модальное окно
       toggleModalSelect();
     } catch (error) {
@@ -73,13 +67,11 @@ const ServicesScreen = () => {
   // Ручное изменение услуги
   const handleEditService = async () => {
     try {
-    // Устанавливаем ID выбранной услуги и открываем модальное окно
-    console.log('Изменение услуги с id:', selectedServiceId);
-    await updateServiceById(selectedService.id, serviceName, servicePrice);
-    loadServices();
-    toggleModalChange();
+      await DataBase.Services.updateServiceById(selectedService.id, serviceName, servicePrice);
+      loadServices();
+      toggleModalChange();
     } catch (error) {
-      console.error('Ошибка при изменению услуги:', error);
+      console.error('Ошибка при изменении услуги:', error);
     }
   };
   // Рендеринг всех елементов для отображения
@@ -92,7 +84,7 @@ const ServicesScreen = () => {
         </View>
       </TouchableOpacity>
     );
-  } ;
+  };
   // Функция для создания FlatList
   const renderFlatList = () => {
     return (
@@ -104,19 +96,14 @@ const ServicesScreen = () => {
     );
   };
   // Модальное окно выбора 
-  const toggleModalSelect = (item) => {
-    setIsModalVisibleSelect(!IsModalVisibleSelect);
-    if (item) {
-    // Устанавливаем ID выбранной услуги и открываем модальное окно
+const toggleModalSelect = (item) => {
+  setIsModalVisibleSelect(!IsModalVisibleSelect);
+  if (item) {
     setSelectedServiceId(item.id);
-    setSelectedService(item);
-    return (
-      <Text>{item.name}</Text>
-    );
-    } else {
-      return null; // Возвращаем null, если item или item.name отсутствует
-    }
-  };
+    setSelectedService(item); 
+    console.log(item.id)// Обновляем выбранную услугу
+  }
+};
   // Модальное окно для изменения
   const toggleModalChange = () => {
     setIsModalVisibleSelectChange(!IsModalVisibleSelectChange);
@@ -166,16 +153,16 @@ const ServicesScreen = () => {
       <Modal visible={IsModalVisibleSelect} animationType="slide">
         <View>
           {/* Крестик для закрытия модального окна */}
-          <CloseModal onPress={toggleModalSelect} />
+          <CloseModal onPress={() => toggleModalSelect()} />
           <View style={styles.modalContainer}>
-          {selectedService && (
-            <View style={styles.selectedServiceText}>
-              {/* Другие детали выбранной услуги */}
-              <View style={styles.selectedServiceTextView}>
-                <Text style={styles.selectedServiceTextInner}>{selectedService.name}  <Text>{selectedService.cost}€</Text></Text>
+            {selectedService && (
+              <View style={styles.selectedServiceText}>
+                {/* Другие детали выбранной услуги */}
+                <View style={styles.selectedServiceTextView}>
+                  <Text style={styles.selectedServiceTextInner}>{selectedService.name}  <Text>{selectedService.cost}€</Text></Text>
+                </View>
               </View>
-            </View>
-          )}
+            )}
             <View style={styles.selectedServiceButton}>
               <ButtonSpecial style={{width: "40%"}} 
               title="Изменить"
@@ -183,7 +170,8 @@ const ServicesScreen = () => {
               <Text>{"\n"}</Text>
               <ButtonSpecial style={{backgroundColor: "red", width: "40%"}} 
               title="Удалить" 
-              onPress={handleDeleteService}/>
+              onPress={handleDeleteService}
+              textStyle={{backgroundColor: "red"}}/>
             </View>
           </View>
         </View>
@@ -198,7 +186,6 @@ const ServicesScreen = () => {
               onChangeText={(text) => setServiceName(text)}
               style={[
                 styles.input,
-                // Условный стиль для изменения цвета обводки
               ]}
               />
           <TextInput
@@ -211,8 +198,7 @@ const ServicesScreen = () => {
             ]}
             />
             {/* Кнопка "Добавить" */}
-            <ButtonSpecial title="Изменить" onPress={() => {
-              handleEditService()}}/>
+            <ButtonSpecial title="Изменить" onPress={handleEditService}/>
         </View>
       </Modal>
       {/* Кнопка добавления новой услуги */}

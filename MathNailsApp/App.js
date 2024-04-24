@@ -70,7 +70,7 @@ const ProfileIconWithDescription = () => {
 export default function App() {
     return (
         <NavigationContainer>
-        <Drawer.Navigator initialRouteName="Entry" >
+        <Drawer.Navigator initialRouteName="Services" >
           <Drawer.Screen 
           name='Profil' 
           component={ProfilScreen} 

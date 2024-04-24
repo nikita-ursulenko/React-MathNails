@@ -39,6 +39,7 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
   const [showSelectedPicker, setShowSelectedPicker] = useState(false);
   const [payWithBar, setPayWithBar] = useState(true);
   const [payWithCard, setPayWithCard] = useState(false);
+  const [person, setPerson] = useState('');
 
 
 
@@ -68,7 +69,7 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
     const dd = String(date.getDate()).padStart(2, '0');
     const mm = String(date.getMonth() + 1).padStart(2, '0');
     const yy = String(date.getFullYear()).slice(-2);
-    return `${dd}/${mm}/${yy}`;
+    return `${dd}.${mm}.${yy}`;
   };
 
   const handleClearInput = () => {
@@ -78,6 +79,7 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
     setService('');
     setCost('');
     setPaymentMethod('Bar');
+    setPerson('');
     setPayWithBar(true);
     setPayWithCard(false);
     setNotes('');
@@ -112,6 +114,7 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
       service,
       cost,
       paymentMethod,
+      person,
       notes,
       clientName,
       comments,
@@ -120,6 +123,7 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
     };
     onAdd(data); // Вызываем переданную функцию onAdd с данными
     // onClose(); 
+    console.log("Тут вот так вот добавляем")
   };
 
   return {
@@ -224,6 +228,12 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
           </View>
           <TextInput
             style={styles.input}
+            placeholder="Кто принял оплату"
+            value={person}
+            onChangeText={setPerson}
+          />
+          <TextInput
+            style={styles.input}
             placeholder="Чаевые"
             value={notes}
             onChangeText={setNotes}
@@ -262,19 +272,30 @@ export const ModalDialog = ({ visible, onClose, onEdit, onDelete }) => {
       visible={visible}
       onRequestClose={onClose}
     >
-      <View>
+      <View style={styles.modalView}>
+        <CloseModal onPress={onClose}/>
         <View>
           <ButtonSpecial
             title="Изменить"
             onPress={onEdit}
-            style={{ marginBottom: 10 }}
+            style={{marginVertical: 50 }}
+            textStyle={{fontSize: 20}} 
           />
-          <ButtonSpecial title="Удалить" onPress={onDelete} />
+          <ButtonSpecial 
+            title="Удалить" 
+            style={{backgroundColor: "red"}} 
+            textStyle={{fontSize: 20, backgroundColor: "red"}} 
+            onPress={onDelete} 
+          />
         </View>
       </View>
     </Modal>
   );
 };
+
+export const CustomModalEdit = ({}) => {
+
+}
 
 
 const styles = StyleSheet.create({

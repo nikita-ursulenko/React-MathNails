@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation, Platform, UIManager, ScrollView } from 'react-native';
-import { AddButton, ButtonSpecial, CustomModal } from '../components/components';
+import { AddButton, ButtonSpecial, CustomModal, ModalDialog } from '../components/components';
 import { clearDataFromDB, deleteItemFromDB, getDataFromDB, saveDataToDB } from '../data/data';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 
 // Компонент развернутого раздела
-const ExpandableSection = ({ title, children, handleDeleteItem }) => {
+const ExpandableSection = ({ title, children, setSelectedDate, setSelectedIndex, setShowModal }) => {
   const [expanded, setExpanded] = useState(false);
 
   const toggleExpand = () => {
@@ -28,10 +28,29 @@ const ExpandableSection = ({ title, children, handleDeleteItem }) => {
           {React.Children.map(children, (child, index) => {
             // Разделяем содержимое child на отдельные элементы
             const parts = child.props.children;
+            const icon = parts[4] === 'Bar' ? (
+              <MaterialCommunityIcons name="cash-plus" size={40} color="green" />
+            ) : (
+              <FontAwesome name="credit-card-alt" size={24} color="blue" />
+            );
             return (
-              <TouchableOpacity style={styles.contentItem} key={index} onPress={() => handleDeleteItem(title, index)}>
-                <Text style={styles.contentItemText}>{parts[0]} </Text>
-                <Text style={styles.contentItemText}>{parts[2]}€ {parts[4]}</Text>
+              <TouchableOpacity style={styles.contentItem} key={index}  onPress={() => {
+                setSelectedDate(title);
+                setSelectedIndex(index);
+                setShowModal(true);
+              }}>
+                <View style={{maxWidth: "60%"}}>
+                  <Text style={styles.contentItemText}>{parts[8]}</Text>
+                  <Text style={styles.contentItemText}>{parts[0]}</Text>
+                  <Text style={styles.contentItemText}></Text>
+                </View>
+                <View style={{justifyContent: "flex-end"}}>
+                  <Text style={{fontWeight: 700, fontSize: 24}}>{parts[2]}€  {icon}</Text>
+                </View>
+                {parts[6] ? 
+                <View style={{ backgroundColor: "orange", padding: 5, borderRadius: 50,  alignContent: "center", justifyContent: "center", width: 70, height: 70, alignItems: "center"}}>
+                  <Text style={{ fontSize: 20 }}>{parts[6]}</Text>
+                </View> : ''}
               </TouchableOpacity>
             );
           })}
@@ -44,6 +63,9 @@ const ExpandableSection = ({ title, children, handleDeleteItem }) => {
 const YourComponent = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [workDone, setWorkDone] = useState({});
+  const [showModal, setShowModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedIndex, setSelectedIndex] = useState(-1);
 
   
   useEffect(() => {
@@ -73,15 +95,13 @@ const YourComponent = () => {
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
-  const toggleModalEdit =() => {
-
-  };
   //Ручное удаление данных
   const handleDeleteItem = async (date, index) => {
     // Удаление элемента из базы данных по индексу
     // Обновление данных на экране
     console.log('Deleted item:', date, index);
     await deleteItemFromDB(date, index);
+    setShowModal(false);
     loadWorkDone();
   };
   // Ручное добавление данных
@@ -113,11 +133,15 @@ const YourComponent = () => {
       <ScrollView>
         <View style={styles.container}>
           {Object.keys(workDone).map((date) => (
-            <ExpandableSection key={date} title={date} handleDeleteItem={handleDeleteItem}>
+            <ExpandableSection 
+            key={date} title={date} 
+            setSelectedDate={setSelectedDate}
+            setSelectedIndex={setSelectedIndex}
+            setShowModal={setShowModal}>
               {workDone[date].map((appointment, index) => {
                 return (
                   <Text key={index} style={styles.serviceItem}>
-                    {appointment.service.name} - {appointment.cost} - {appointment.paymentMethod}
+                    {appointment.service.name} - {appointment.cost} - {appointment.paymentMethod} - {appointment.person} - {appointment.clientName}
                   </Text>
                 );
               })}
@@ -127,8 +151,13 @@ const YourComponent = () => {
       </ScrollView>
       {modalContent}
       <AddButton onPress={toggleModal} />
-      <ButtonSpecial title={'удалить'} onPress={clearDataFromDB} />
-      <ButtonSpecial title={'показать'} onPress={loadWorkDone} style={{marginVertical: 20}}/>
+      <ModalDialog
+        visible={showModal}
+        onClose={() => setShowModal(false)}
+        onEdit={() => handleEditItem(selectedDate, selectedIndex)}
+        onDelete={() => handleDeleteItem(selectedDate, selectedIndex)}
+      />
+      <ButtonSpecial onPress={clearDataFromDB}/>
     </View>
   );
 };
@@ -153,17 +182,22 @@ const styles = StyleSheet.create({
   content: {
     padding: 10,
     backgroundColor: '#f9c2ff',
+    alignContent: "center",
+    
   },
   contentItem: {
     backgroundColor: "#33B5FF",
-    padding: 10,
+    paddingHorizontal: 5,
     marginVertical: 5,
     borderRadius: 10,
     justifyContent: "space-between", 
-    flexDirection: "row"
+    flexDirection: "row",
+    alignItems: "center"
   },
   contentItemText: {
-    fontSize: 20,
+    fontSize: 24,
+    
+    padding: 0,
   },
   serviceItem: {
     fontSize: 14,
