@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import { Image, View, Text } from 'react-native';
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
@@ -28,11 +28,15 @@ const loadMasterData = async () => {
 
 // Компонент с иконкой профиля и описанием
 const ProfileIconWithDescription = () => {
+  const navigationRef = useRef();
   // Стейт для хранения загруженных данных
   const [masterData, setMasterData] = useState(null);
 
   // Эффект, который выполняется при монтировании компонента
   useEffect(() => {
+    const unsubscribe = navigationRef.current?.addListener('focus', () => {
+      fetchData();
+    });
     // Функция для асинхронной загрузки данных
     const fetchData = async () => {
       try {
@@ -47,7 +51,7 @@ const ProfileIconWithDescription = () => {
 
     // Вызываем функцию загрузки данных
     fetchData();
-  }, []); // Пустой массив зависимостей, чтобы эффект выполнялся только один раз при монтировании компонента
+  }, [navigationRef]); // Пустой массив зависимостей, чтобы эффект выполнялся только один раз при монтировании компонента
 
   return (
   <View style={{width: "100%", height: "100%", alignItems: 'center'}}>
@@ -68,9 +72,10 @@ const ProfileIconWithDescription = () => {
   
 
 export default function App() {
+
     return (
         <NavigationContainer>
-        <Drawer.Navigator initialRouteName="Services" >
+        <Drawer.Navigator initialRouteName="Entry" >
           <Drawer.Screen 
           name='Profil' 
           component={ProfilScreen} 

@@ -1,35 +1,20 @@
-import { View, Text, Modal } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { useState } from "react";
-import { ButtonSpecial } from "../components/components";
+import React from 'react';
+import { Text, View } from 'react-native';
+import moment from 'moment';
+import 'moment/locale/ru';
 
-const GeneralScreen = () => {
-  const [date, setDate] = useState(new Date());
-  const [showPicker, setShowPicker] = useState(false);
+moment.locale('ru');
 
-  const togglePicker = () => {
-    setShowPicker(!showPicker);
-  };
+export default function App() {
+  const dateString = '24.04.24';
+  const dayOfWeek = moment(dateString, 'YY.MM.DD').format('dddd');
 
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        {showPicker && (
-          <Modal>
-            <DateTimePicker 
-              mode="date"
-              display="spinner"
-              value={date}
-            />
-          <ButtonSpecial title="Закрыть" onPress={togglePicker}/>
-          </Modal>
-        )
-        }
-        <ButtonSpecial 
-        textStyle={{fontSize: 20}}
-        title="Открыть" 
-        onPress={togglePicker}/>
-      </View>
-    );
+  // Преобразуем первую букву в заглавную
+  const capitalizedDay = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1);
+
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>{capitalizedDay}</Text>
+    </View>
+  );
 }
-  
-export default GeneralScreen;

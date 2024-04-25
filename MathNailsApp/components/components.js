@@ -1,8 +1,8 @@
-import { StyleSheet, TouchableOpacity, Text, Modal, View, TextInput, CheckBox } from 'react-native';
+import { StyleSheet, TouchableOpacity, Text, Modal, View, TextInput } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import React, { useState, useEffect } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { getAllServices } from '../data/data';
+import DataBase from '../data/data';
 import { Picker } from '@react-native-picker/picker';
 
 export const ButtonSpecial = ({ onPress, title, style, textStyle }) => {return(
@@ -24,7 +24,7 @@ export const CloseModal = ({ onPress }) => {return (
   </TouchableOpacity>
 )};
 // Для экрана EnrtyScreen.js прии добавления данных
-export const CustomModal = ({ visible, onClose, onAdd }) => {
+export const CustomModal = ({ visible, onClose, onAdd, appointmentData }) => {
   const [service, setService] = useState('');
   const [cost, setCost] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Bar');
@@ -47,11 +47,27 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
     const today = new Date();
     setDate(today);
     setFormattedDate(formatDate(today));
-    console.log("Effect: ",date)
-    getAllServices()
+    DataBase.Services.getAllServices()
     .then((data) => setServices(data))
     .catch((error) => console.error('Error loading services:', error));
   }, []);
+
+  useEffect(() => {
+    console.log("Заходим в проверку appointment")
+    if (appointmentData.selectedDate && appointmentData.selectedIndex !== -1) {
+      const appointment = appointmentData.workDone[appointmentData.selectedDate][appointmentData.selectedIndex];
+      setService(appointment.service.name);
+      setSelectedService(appointment.service.id)
+      setCost(appointment.cost);
+      handlePayMethod(appointment.paymentMethod);
+      setPerson(appointment.person)
+      setNotes(appointment.notes);
+      setClientName(appointment.clientName);
+      setComments(appointment.comments);
+      setFormattedDate(formatDate(new Date(appointment.date)));
+      setDate(new Date(appointment.date));
+    }
+  }, [appointmentData.selectedDate, appointmentData.selectedIndex]);
 
   const renderServiceItems = () => {
     return services.map((service, index) => (
@@ -73,18 +89,23 @@ export const CustomModal = ({ visible, onClose, onAdd }) => {
   };
 
   const handleClearInput = () => {
-    setDate(new Date());
-    setFormattedDate(formatDate(new Date()));
-    setSelectedService(null);
-    setService('');
-    setCost('');
-    setPaymentMethod('Bar');
-    setPerson('');
-    setPayWithBar(true);
-    setPayWithCard(false);
-    setNotes('');
-    setClientName('');
-    setComments('');
+    if (!appointmentData.selectedDate || !appointmentData.selectedIndex) {
+      setDate(new Date());
+      setFormattedDate(formatDate(new Date()));
+      setSelectedService(null);
+      setService('');
+      setCost('');
+      setPaymentMethod('Bar');
+      setPerson('');
+      setPayWithBar(true);
+      setPayWithCard(false);
+      setNotes('');
+      setClientName('');
+      setComments('');
+      console.log("Пусто")
+    } else {
+      console.log("Не пусто")
+    }
   };
 
   const handlePayMethod = (method) => {
