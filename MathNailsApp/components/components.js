@@ -24,7 +24,7 @@ export const CloseModal = ({ onPress }) => {return (
   </TouchableOpacity>
 )};
 // Для экрана EnrtyScreen.js прии добавления данных
-export const CustomModal = ({ visible, onClose, onAdd, appointmentData }) => {
+export const CustomModal = ({ visible, onClose, onAdd, onEdit, appointmentData, addButton }) => {
   const [service, setService] = useState('');
   const [cost, setCost] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Bar');
@@ -41,8 +41,6 @@ export const CustomModal = ({ visible, onClose, onAdd, appointmentData }) => {
   const [payWithCard, setPayWithCard] = useState(false);
   const [person, setPerson] = useState('');
 
-
-
   useEffect(() => {
     const today = new Date();
     setDate(today);
@@ -53,10 +51,9 @@ export const CustomModal = ({ visible, onClose, onAdd, appointmentData }) => {
   }, []);
 
   useEffect(() => {
-    console.log("Заходим в проверку appointment")
     if (appointmentData.selectedDate && appointmentData.selectedIndex !== -1) {
       const appointment = appointmentData.workDone[appointmentData.selectedDate][appointmentData.selectedIndex];
-      setService(appointment.service.name);
+      setService(appointment.service);
       setSelectedService(appointment.service.id)
       setCost(appointment.cost);
       handlePayMethod(appointment.paymentMethod);
@@ -67,29 +64,35 @@ export const CustomModal = ({ visible, onClose, onAdd, appointmentData }) => {
       setFormattedDate(formatDate(new Date(appointment.date)));
       setDate(new Date(appointment.date));
     }
-  }, [appointmentData.selectedDate, appointmentData.selectedIndex]);
+  }, [appointmentData.showModal]);
 
+  useEffect(() => {
+    DataBase.Services.getAllServices()
+    .then((data) => setServices(data))
+    .catch((error) => console.error('Error loading services:', error));
+  }, [showSelectedPicker]);
+
+  //Вывод услуг 
   const renderServiceItems = () => {
     return services.map((service, index) => (
       <Picker.Item key={index} label={`${service.name}`} value={service.id} />
     ));
   };
-
+  //Изменение выбранной даты
   const onChange = (selectedDate) => {
     setDate(selectedDate);
     setFormattedDate(formatDate(selectedDate));
     console.log("Эффект: ", selectedDate)
   };
-
+  //Форматирование данных
   const formatDate = (date) => {
     const dd = String(date.getDate()).padStart(2, '0');
     const mm = String(date.getMonth() + 1).padStart(2, '0');
     const yy = String(date.getFullYear()).slice(-2);
     return `${dd}.${mm}.${yy}`;
   };
-
+  //Ручная очистка полей 
   const handleClearInput = () => {
-    if (!appointmentData.selectedDate || !appointmentData.selectedIndex) {
       setDate(new Date());
       setFormattedDate(formatDate(new Date()));
       setSelectedService(null);
@@ -102,12 +105,9 @@ export const CustomModal = ({ visible, onClose, onAdd, appointmentData }) => {
       setNotes('');
       setClientName('');
       setComments('');
-      console.log("Пусто")
-    } else {
-      console.log("Не пусто")
-    }
+      console.log("Очистка")
   };
-
+  //Метод оплаты определение
   const handlePayMethod = (method) => {
     if (method === 'Bar') {
       setPayWithBar(true);
@@ -119,16 +119,26 @@ export const CustomModal = ({ visible, onClose, onAdd, appointmentData }) => {
       setPaymentMethod('Card');
     }
   };
-
+  //Переключатель Дата
   const togglePicker = () => {
     setShowDatePicker(!showDatePicker);
   };
-
-  const togglePickerServices = () => {
-    setSelectedService(null); // Сбрасываем выбранную услугу при закрытии модального окна
-    setShowSelectedPicker(false);
+  // В CustomModal
+  const handleEditButtonPress = () => {
+    const updatedData = {
+      service,
+      cost,
+      paymentMethod,
+      person,
+      notes,
+      clientName,
+      comments,
+      date: date.toISOString(),
+      formattedDate: formatDate(date)
+    };
+    onEdit(updatedData); // Передаем новые данные в функцию редактирования из EntryScreen
   };
-
+  // Передача данных для добавления
   const handleAdd = () => {
     // Ваши действия по добавлению данных
     const data = {
@@ -143,7 +153,7 @@ export const CustomModal = ({ visible, onClose, onAdd, appointmentData }) => {
       formattedDate,
     };
     onAdd(data); // Вызываем переданную функцию onAdd с данными
-    // onClose(); 
+    // onClose();
     console.log("Тут вот так вот добавляем")
   };
 
@@ -183,7 +193,6 @@ export const CustomModal = ({ visible, onClose, onAdd, appointmentData }) => {
           {showSelectedPicker && (
           <Modal>
             <View style={{height: "100%", justifyContent: "center"}}>
-              <CloseModal onPress={togglePickerServices}/>
               <Picker 
                   selectedValue={selectedService}
                   onValueChange={(itemValue) => {
@@ -275,13 +284,21 @@ export const CustomModal = ({ visible, onClose, onAdd, appointmentData }) => {
           <ButtonSpecial 
           style={{marginTop: 20, marginBottom: -20}}
           textStyle={{fontSize: 24}} 
-          title={"Добавить"} 
-          onPress={() => {handleAdd(); onClose(); handleClearInput(); }}/>
+          title={addButton ? "Добавить" : "Редактировать"}
+          onPress={() => {
+            if (addButton) {
+              handleAdd();
+            } else {
+              handleEditButtonPress();
+            }
+            onClose(); handleClearInput();
+          }}/>
         </View>
       </Modal>
   ),
     data: {},
-    onAdd: handleAdd, // Функция для добавления данных
+    onAdd: handleAdd,
+    handleClearInput, // Функция для добавления данных
   };
 };
 
@@ -294,7 +311,7 @@ export const ModalDialog = ({ visible, onClose, onEdit, onDelete }) => {
       onRequestClose={onClose}
     >
       <View style={styles.modalView}>
-        <CloseModal onPress={onClose}/>
+        <CloseModal onPress={() => { onClose(); }} />
         <View>
           <ButtonSpecial
             title="Изменить"
@@ -313,11 +330,6 @@ export const ModalDialog = ({ visible, onClose, onEdit, onDelete }) => {
     </Modal>
   );
 };
-
-export const CustomModalEdit = ({}) => {
-
-}
-
 
 const styles = StyleSheet.create({
   button: {

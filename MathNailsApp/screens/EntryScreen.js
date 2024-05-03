@@ -8,7 +8,7 @@ import 'moment/locale/ru';
 moment.locale('ru');
 
 // Компонент развернутого раздела
-const ExpandableSection = ({ title, children, setSelectedDate, setSelectedIndex, setShowModal }) => {
+const ExpandableSection = ({ title, children, setSelectedDate, setSelectedIndex, setShowModal,  }) => {
   const [expanded, setExpanded] = useState(false);
   const dayOfWeek = moment(title, 'YY.MM.DD').format('dddd');
   // Преобразуем первую букву в заглавную
@@ -77,6 +77,7 @@ const EntryScreen = () => {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [appointmentData, setAppointmentData] = useState({});
+  const [addButton, setAddButton] = useState(false);
 
   
   useEffect(() => {
@@ -105,11 +106,13 @@ const EntryScreen = () => {
   // Состояние модального окна
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
+    setAddButton(false);
   };
 
   const toggleHandleEditItem = (selectedDate, selectedIndex) => {
     setIsModalVisible(!isModalVisible);
     setShowModal(!showModal);
+    setAddButton(false);
     setAppointmentData({
       ...appointmentData,
       selectedDate: selectedDate,
@@ -132,12 +135,23 @@ const EntryScreen = () => {
     await DataBase.WorkDone.saveDataToDB(data);
     loadWorkDone();
   };
+  // Ручное изменение
+  const handleEdit = async (updatedData) => {
+    try {
+      await DataBase.WorkDone.updateItemInDB(appointmentData.selectedDate, appointmentData.selectedIndex, updatedData);
+      loadWorkDone(); // Вызов для перезагрузки данных
+    } catch (error) {
+      console.error('Failed to update data:', error);
+    }
+  };
   // Получение данных, из компонент
-  const { modalContent } = CustomModal({
+  const { modalContent, handleClearInput } = CustomModal({
     visible: isModalVisible,
     onClose: toggleModal,
     onAdd: handleAdd,
-    appointmentData: { selectedDate, selectedIndex, workDone },
+    onEdit: handleEdit,
+    addButton: addButton,
+    appointmentData: { selectedDate, selectedIndex, workDone, showModal },
   });
   // Загрузка данных из ДБ
   const loadWorkDone = async () => {
@@ -172,14 +186,15 @@ const EntryScreen = () => {
         </View>
       </ScrollView>
       {modalContent}
-      <AddButton onPress={toggleModal} />
+      <AddButton onPress={() => {toggleModal(); setAddButton(true);  handleClearInput(); }} />
       <ModalDialog
         visible={showModal}
-        onClose={() => setShowModal(false)}
+        onClose={() => { setShowModal(false);}}
         onEdit={() => toggleHandleEditItem(selectedDate, selectedIndex)}
         onDelete={() => handleDeleteItem(selectedDate, selectedIndex)}
+        clearInputs={handleClearInput}
       />
-      <ButtonSpecial onPress={DataBase.WorkDone.clearDataFromDB}/>
+      <ButtonSpecial title={"Очистка"} onPress={DataBase.WorkDone.clearDataFromDB}/>
     </View>
   );
 };

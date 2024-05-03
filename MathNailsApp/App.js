@@ -30,11 +30,13 @@ const loadMasterData = async () => {
 const ProfileIconWithDescription = () => {
   const navigationRef = useRef();
   // Стейт для хранения загруженных данных
+
   const [masterData, setMasterData] = useState(null);
+
 
   // Эффект, который выполняется при монтировании компонента
   useEffect(() => {
-    const unsubscribe = navigationRef.current?.addListener('focus', () => {
+    const unsubscribe = navigationRef.current?.addListener('drawerOpen', () => {
       fetchData();
     });
     // Функция для асинхронной загрузки данных
@@ -72,7 +74,7 @@ const ProfileIconWithDescription = () => {
   
 
 export default function App() {
-
+    
     return (
         <NavigationContainer>
         <Drawer.Navigator initialRouteName="Entry" >

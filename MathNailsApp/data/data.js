@@ -217,7 +217,40 @@ export default class DataBase {
         console.error('Error deleting item:', error);
       }
     }
-
+    
+    //Изменение данных
+    static async updateItemInDB(originalDate, index, newData) {
+      try {
+        const workDoneString = await AsyncStorage.getItem('workDone');
+        let workDone = workDoneString ? JSON.parse(workDoneString) : {};
+    
+        // Проверка, существует ли запись для исходной даты и данного индекса
+        if (workDone[originalDate] && workDone[originalDate][index]) {
+          // Удаление старой записи
+          workDone[originalDate].splice(index, 1);
+          if (workDone[originalDate].length === 0) {
+            delete workDone[originalDate]; // Удаляем пустой массив для даты, если больше нет записей
+          }
+    
+          // Добавление записи к новой дате
+          const newDate = newData.formattedDate;
+          if (!workDone[newDate]) {
+            workDone[newDate] = [];
+          }
+          workDone[newDate].push(newData);
+    
+          // Сохранение обновленных данных
+          await AsyncStorage.setItem('workDone', JSON.stringify(workDone));
+          console.log('Data updated successfully!');
+        } else {
+          console.log('No such item to update.');
+        }
+      } catch (error) {
+        console.error('Error updating item:', error);
+        throw error;
+      }
+    }
+    
     // Очистка данных из базы данных
     static async clearDataFromDB() {
       try {
