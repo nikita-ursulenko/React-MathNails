@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TextInput, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import DataBase from '../data/data';
 import { ButtonSpecial, AddButton, CloseModal } from '../components/components';
+import { useTheme } from '../context/ThemeProvider';
+import { darkTheme, lightTheme } from '../assets/styles/styles';
 
 const ServicesScreen = () => {
   // Все переменные которые используюся по названию и логике
@@ -14,6 +16,10 @@ const ServicesScreen = () => {
   const [selectedServiceId, setSelectedServiceId] = useState(null);// ID выбранной услуги
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedService, setSelectedService] = useState('');
+
+  const themeContext = useTheme();
+  const { theme } = themeContext;
+  const styles = theme === 'dark' ? darkTheme : lightTheme;
 
   useEffect(() => {
     loadServices();
@@ -79,8 +85,8 @@ const ServicesScreen = () => {
     return (
       <TouchableOpacity  onPress={() => toggleModalSelect(item)}>
         <View style={styles.servicesScreen}>
-          <Text style={styles.nameStyle}>{item.name}</Text>
-          <Text style={styles.costStyle}>{item.cost}€</Text>
+          <Text style={[styles.text,styles.nameStyle]}>{item.name}</Text>
+          <Text style={[styles.text,styles.costStyle]}>{item.cost}€</Text>
         </View>
       </TouchableOpacity>
     );
@@ -126,6 +132,7 @@ const toggleModalSelect = (item) => {
           {/* Форма ввода новой услуги */}
           <TextInput
             placeholder="Название услуги"
+            placeholderTextColor={theme === 'dark' ? 'gray' : 'lightgray'}
             value={serviceName}
             onChangeText={(text) => setServiceName(text)}
             style={[
@@ -136,6 +143,7 @@ const toggleModalSelect = (item) => {
             />
           <TextInput
             placeholder="Цена услуги"
+            placeholderTextColor={theme === 'dark' ? 'gray' : 'lightgray'}
             value={servicePrice}
             onChangeText={(text) => setServicePrice(text)}
             keyboardType="numeric"
@@ -159,7 +167,7 @@ const toggleModalSelect = (item) => {
               <View style={styles.selectedServiceText}>
                 {/* Другие детали выбранной услуги */}
                 <View style={styles.selectedServiceTextView}>
-                  <Text style={styles.selectedServiceTextInner}>{selectedService.name}  <Text>{selectedService.cost}€</Text></Text>
+                  <Text style={[styles.text, styles.selectedServiceTextInner]}>{selectedService.name}  <Text style={styles.text}>{selectedService.cost}€</Text></Text>
                 </View>
               </View>
             )}
@@ -182,18 +190,22 @@ const toggleModalSelect = (item) => {
         <View style={styles.changeView}>
           <TextInput
               placeholder="Название услуги"
+              placeholderTextColor={theme === 'dark' ? 'white' : 'white'}
               value={serviceName}
               onChangeText={(text) => setServiceName(text)}
               style={[
+                styles.text,
                 styles.input,
               ]}
               />
           <TextInput
             placeholder="Цена услуги"
+            placeholderTextColor={theme === 'dark' ? 'gray' : 'lightgray'}
             value={servicePrice}
             onChangeText={(text) => setServicePrice(text)}
             keyboardType="numeric"
             style={[
+              styles.text,
               styles.input,
             ]}
             />
@@ -211,63 +223,5 @@ const toggleModalSelect = (item) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  modalContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: "100%",
-  },
-  input: {
-    borderWidth: 2,
-    padding: 10,
-    fontSize: 20,
-    marginBottom: 30,
-    borderRadius: 50,
-    width: "80%",
-  },
-  renderList: {
-    height: "100%",
-  },
-  servicesScreen: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    height: 60,
-    padding: 10,
-    borderBottomWidth: 2,
-  },  
-  nameStyle: {
-    fontSize: 20,
-  },
-  costStyle: {
-    fontSize: 24,
-  },
-  selectedServiceText: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  selectedServiceTextView: {
-    borderBottomWidth: 2,
-    padding: 10,
-  },
-  selectedServiceTextInner: {
-    textAlign: "center",
-    fontSize: 24,
-  },
-  selectedServiceButton: {
-    width: "100%",
-    alignItems: "center",
-    flex: 1,
-  },
-  changeView: {
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100%"
-  },
-});
 
 export default ServicesScreen;

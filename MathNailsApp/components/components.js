@@ -4,21 +4,36 @@ import React, { useState, useEffect } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DataBase from '../data/data';
 import { Picker } from '@react-native-picker/picker';
+import { useTheme } from '../context/ThemeProvider';
+import { darkThemeComponents, lightThemeComponents } from '../assets/styles/StylesComponents';
 
-export const ButtonSpecial = ({ onPress, title, style, textStyle }) => {return(
+
+export const ButtonSpecial = ({ onPress, title, style, textStyle }) => {
+  const themeContext = useTheme();
+  const { theme } = themeContext;
+  const styles = theme === 'dark' ? darkThemeComponents : lightThemeComponents;
+  return(
   <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
-    <Text style={[styles.button, textStyle]}>{title}</Text>
+    <Text style={[styles.button, textStyle, {color: theme === 'dark' ? 'white' : 'black'}]}>{title}</Text>
   </TouchableOpacity>
 )};
 
-export const AddButton = ({ onPress }) => {return (
+export const AddButton = ({ onPress }) => {
+  const themeContext = useTheme();
+  const { theme } = themeContext;
+  const styles = theme === 'dark' ? darkThemeComponents : lightThemeComponents;
+  return (
     <TouchableOpacity style={styles.addButton} onPress={onPress}>
       <AntDesign name="plus" size={24} color="white" />
     </TouchableOpacity>
   );
 };
 
-export const CloseModal = ({ onPress }) => {return (
+export const CloseModal = ({ onPress }) => {
+  const themeContext = useTheme();
+  const { theme } = themeContext;
+  const styles = theme === 'dark' ? darkThemeComponents : lightThemeComponents;
+  return (
   <TouchableOpacity style={styles.closeButton} onPress={onPress}>
     <AntDesign name="closecircle" size={40} color="red" />
   </TouchableOpacity>
@@ -40,6 +55,9 @@ export const CustomModal = ({ visible, onClose, onAdd, onEdit, appointmentData, 
   const [payWithBar, setPayWithBar] = useState(true);
   const [payWithCard, setPayWithCard] = useState(false);
   const [person, setPerson] = useState('');
+  const themeContext = useTheme();
+  const { theme } = themeContext;
+  const styles = theme === 'dark' ? darkThemeComponents : lightThemeComponents;
 
   useEffect(() => {
     const today = new Date();
@@ -75,7 +93,7 @@ export const CustomModal = ({ visible, onClose, onAdd, onEdit, appointmentData, 
   //Вывод услуг 
   const renderServiceItems = () => {
     return services.map((service, index) => (
-      <Picker.Item key={index} label={`${service.name}`} value={service.id} />
+      <Picker.Item key={index} label={`${service.name}`} value={service.id} color={theme === 'dark' ? 'white' : 'black'}/>
     ));
   };
   //Изменение выбранной даты
@@ -163,6 +181,7 @@ export const CustomModal = ({ visible, onClose, onAdd, onEdit, appointmentData, 
         animationType="slide"
         transparent={true}
         visible={visible}
+        style={{backgroundColor: "red"}}
       >
       <View style={styles.modalView}>
         <CloseModal onPress={() => {onClose(); handleClearInput();}} />
@@ -170,6 +189,7 @@ export const CustomModal = ({ visible, onClose, onAdd, onEdit, appointmentData, 
           <Modal>
             <View style={styles.centerStyle}>
               <DateTimePicker
+                textColor={theme === 'dark' ? 'white' : 'black'}
                 testID="dateTimePicker"
                 value={date}
                 mode="date"
@@ -185,14 +205,14 @@ export const CustomModal = ({ visible, onClose, onAdd, onEdit, appointmentData, 
           </Modal>
           )}
           <TextInput
-            style={styles.input}
+            style={[styles.text, styles.input]}
             onChangeText={setFormattedDate}
             value={formattedDate}
             onPressIn={togglePicker}
           />
           {showSelectedPicker && (
           <Modal>
-            <View style={{height: "100%", justifyContent: "center"}}>
+            <View style={[{height: "100%", justifyContent: "center"}, styles.viewBlack]}>
               <Picker 
                   selectedValue={selectedService}
                   onValueChange={(itemValue) => {
@@ -221,15 +241,17 @@ export const CustomModal = ({ visible, onClose, onAdd, onEdit, appointmentData, 
           </Modal>
           )}
           <TextInput
-            style={styles.input}
+            style={[styles.text, styles.input]}
             placeholder="Услуга"
+            placeholderTextColor={theme === 'dark' ? 'gray' : 'lightgray'}
             value={selectedService ? services[selectedService -1].name : null }
             onChangeText={setService}
             onPressIn={() => setShowSelectedPicker(true)}
           />
           <TextInput
-            style={styles.input}
+            style={[styles.text, styles.input]}
             placeholder="Стоимость"
+            placeholderTextColor={theme === 'dark' ? 'gray' : 'lightgray'}
             value={cost}
             onChangeText={setCost}
             keyboardType="numeric"
@@ -243,7 +265,7 @@ export const CustomModal = ({ visible, onClose, onAdd, onEdit, appointmentData, 
                 onPress={() => handlePayMethod('Bar')}
                 style={styles.icon}
               />
-              <Text style={styles.paragraph}>Bar</Text>
+              <Text style={[styles.text, styles.paragraph]}>Bar</Text>
             </View>
             <View style={styles.section}>
                 <AntDesign
@@ -253,31 +275,35 @@ export const CustomModal = ({ visible, onClose, onAdd, onEdit, appointmentData, 
                 onPress={() => handlePayMethod('Card')}
                 style={styles.icon}
               />
-              <Text style={styles.paragraph}>Card</Text>
+              <Text style={[styles.text,styles.paragraph]}>Card</Text>
             </View>
           </View>
           <TextInput
-            style={styles.input}
+            style={[styles.text, styles.input]}
             placeholder="Кто принял оплату"
+            placeholderTextColor={theme === 'dark' ? 'gray' : 'lightgray'}
             value={person}
             onChangeText={setPerson}
           />
           <TextInput
-            style={styles.input}
+            style={[styles.text, styles.input]}
             placeholder="Чаевые"
+            placeholderTextColor={theme === 'dark' ? 'gray' : 'lightgray'}
             value={notes}
             onChangeText={setNotes}
             keyboardType="numeric"
           />
           <TextInput
-            style={styles.input}
+            style={[styles.text, styles.input]}
             placeholder="Имя клиента"
+            placeholderTextColor={theme === 'dark' ? 'gray' : 'lightgray'}
             value={clientName}
             onChangeText={setClientName}
           />
           <TextInput
-            style={styles.input}
+            style={[styles.text, styles.input]}
             placeholder="Комментарии"
+            placeholderTextColor={theme === 'dark' ? 'gray' : 'lightgray'}
             value={comments}
             onChangeText={setComments}
           />
@@ -303,6 +329,9 @@ export const CustomModal = ({ visible, onClose, onAdd, onEdit, appointmentData, 
 };
 
 export const ModalDialog = ({ visible, onClose, onEdit, onDelete }) => {
+  const themeContext = useTheme();
+  const { theme } = themeContext;
+  const styles = theme === 'dark' ? darkThemeComponents : lightThemeComponents;
   return (
     <Modal
       animationType="slide"
@@ -331,84 +360,6 @@ export const ModalDialog = ({ visible, onClose, onEdit, onDelete }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  button: {
-    backgroundColor: '#007bff', // Цвет фона кнопки
-    paddingVertical: 6, // Вертикальный отступ
-    paddingHorizontal: 12, // Горизонтальный отступ
-    borderRadius: 5, // Радиус скругления углов
-    alignItems: "center",
-  },
-  buttonText: {
-    color: '#ffffff', // Цвет текста кнопки
-    fontSize: 16, // Размер текста кнопки
-    textAlign: 'center', // Выравнивание текста по центру
-  },
-  addButton: {
-    zIndex: 999,
-    position: 'absolute',
-    bottom: 50,
-    right: 20,
-    width: 80,
-    height: 80,
-    borderRadius: 50,
-    backgroundColor: 'green',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  closeButton: {
-    position: 'absolute',
-    zIndex: 1,
-    top: 60,
-    right: 20,
-  },
-  modalView: {
-    backgroundColor: "white",
-    padding: 35,
-    alignItems: "center",
-    shadowColor: "#000",
-    height: "100%",
-    justifyContent: "center",
-    shadowOffset: {
-      width: 0,
-      height: 2
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5
-  },
-  input: {
-    height: 50,
-    marginVertical: 10,
-    borderWidth: 2,
-    padding: 10,
-    fontSize: 20,
-    borderRadius: 50,
-    width: "95%",
-  },
-  centerStyle: {
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
 
-
-
-  container: {
-    marginVertical: 10,
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "space-around"
-  },
-  section: {
-    alignItems: 'center',
-  },
-  paragraph: {
-    fontSize: 20,
-  },
-  checkbox: {
-    margin: 8,
-  },
-});
 
 

@@ -5,14 +5,24 @@ import { AntDesign, FontAwesome5, FontAwesome } from '@expo/vector-icons';
 import DataBase from '../data/data';
 import moment from 'moment';
 import 'moment/locale/ru';
+//style
+import { useTheme } from '../context/ThemeProvider';
+import { darkTheme, lightTheme } from '../assets/styles/styles';
 moment.locale('ru');
 
 // Компонент развернутого раздела
 const ExpandableSection = ({ title, children, setSelectedDate, setSelectedIndex, setShowModal,  }) => {
+  const themeContext = useTheme();
+  const { theme } = themeContext;
+  const styles = theme === 'dark' ? darkTheme : lightTheme;
+
   const [expanded, setExpanded] = useState(false);
-  const dayOfWeek = moment(title, 'YY.MM.DD').format('dddd');
+  const dateFormatted = moment(title, 'DD.MM.YY').format('dddd');
   // Преобразуем первую букву в заглавную
-  const capitalizedDay = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1);
+  const capitalizedDay = dateFormatted.charAt(0).toUpperCase() + dateFormatted.slice(1);
+    const dayOfWeek = capitalizedDay.split(',')[0];
+    const date = capitalizedDay.split(',')[1];
+
 
   const toggleExpand = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -23,13 +33,19 @@ const ExpandableSection = ({ title, children, setSelectedDate, setSelectedIndex,
     <View>
       <TouchableOpacity onPress={toggleExpand} style={styles.sectionHeader}>
         <View style={{flexDirection: "row"}}>
-          <Text style={styles.headerText}>{capitalizedDay} </Text>
-          <Text style={styles.headerText}>{title}</Text>
+          <Text style={styles.headerText}>
+              <Text style={{ color: dayOfWeek.includes('Суббота') ? 'rgba(218, 23, 26, 1)' : theme === "dark" ? "white" : "black" }}>
+                  {dayOfWeek}
+              </Text>
+              <Text>
+              </Text>
+          </Text>
+          <Text style={styles.headerText}> {title}</Text>
         </View>
         {expanded ? (
-          <AntDesign name="upcircle" size={30} color="black" />
+          <AntDesign name="upcircle" size={30} color={theme === 'dark' ? "white" : "black"} />
         ) : (
-          <AntDesign name="downcircleo" size={30} color="black" />
+          <AntDesign name="downcircleo" size={30} color={theme === 'dark' ? "white" : "black"} />
         )}
       </TouchableOpacity>
       {expanded && (
@@ -53,10 +69,10 @@ const ExpandableSection = ({ title, children, setSelectedDate, setSelectedIndex,
                 </View>
                   {parts[6] ? 
                   <View style={{ borderBottomWidth: 2, borderColor: "red", alignSelf: "center"}}>
-                    <Text style={{ fontSize: 20 }}>{parts[6]}</Text>
+                    <Text style={[styles.text,{ fontSize: 20 }]}>{parts[6]}</Text>
                   </View> : ''} 
                 <View style={{minHeight: 50, flexDirection: "row", alignItems: "center"}}>
-                  <Text style={{fontWeight: 700, fontSize: 24,}}>{parts[2]}€ </Text>
+                  <Text style={[styles.text,{fontWeight: 700, fontSize: 24,}]}>{parts[2]}€ </Text>
                     <View>
                     {icon}
                     </View>
@@ -78,6 +94,11 @@ const EntryScreen = () => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [appointmentData, setAppointmentData] = useState({});
   const [addButton, setAddButton] = useState(false);
+
+  //style 
+  const themeContext = useTheme();
+  const { theme } = themeContext;
+  const styles = theme === 'dark' ? darkTheme : lightTheme;
 
   
   useEffect(() => {
@@ -194,49 +215,8 @@ const EntryScreen = () => {
         onDelete={() => handleDeleteItem(selectedDate, selectedIndex)}
         clearInputs={handleClearInput}
       />
-      <ButtonSpecial title={"Очистка"} onPress={DataBase.WorkDone.clearDataFromDB}/>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 5,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-    marginVertical: 2,
-    padding: 10,
-    borderWidth: 2,
-    borderColor: 'black',
-    borderBottomWidth: 1,
-  },
-  headerText: {
-    fontSize: 20,
-  },
-  content: {
-    padding: 10,
-    backgroundColor: '#f9c2ff',
-  },
-  contentItem: {
-    backgroundColor: "#33B5FF",
-    paddingHorizontal: 5,
-    marginVertical: 5,
-    borderRadius: 10,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center"
-  },
-  contentItemText: {
-    fontSize: 24,   
-  },
-  serviceItem: {
-
-  },
-});
 
 export default EntryScreen;
