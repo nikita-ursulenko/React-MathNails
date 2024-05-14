@@ -136,6 +136,7 @@ const toggleModalSelect = (item) => {
             value={serviceName}
             onChangeText={(text) => setServiceName(text)}
             style={[
+              styles.text,
               styles.input,
               // Условный стиль для изменения цвета обводки
               { borderColor: errorMessage === 'serviceName' || errorMessage === 'serviceName and servicePrice' ? 'red' : 'gray' },
@@ -148,6 +149,7 @@ const toggleModalSelect = (item) => {
             onChangeText={(text) => setServicePrice(text)}
             keyboardType="numeric"
             style={[
+              styles.text,
               styles.input,
               // Условный стиль для изменения цвета обводки
               { borderColor: errorMessage === 'servicePrice' || errorMessage === 'serviceName and servicePrice' ? 'red' : 'gray' },

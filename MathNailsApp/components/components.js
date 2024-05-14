@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, Text, Modal, View, TextInput } from 'react-native';
+import { StyleSheet, TouchableOpacity, Text, Modal, View, TextInput, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ScrollView } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import React, { useState, useEffect } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -183,6 +183,8 @@ export const CustomModal = ({ visible, onClose, onAdd, onEdit, appointmentData, 
         visible={visible}
         style={{backgroundColor: "red"}}
       >
+      <KeyboardAvoidingView style={{ flex: 10 }} behavior={Platform.OS === "ios" ? "padding" : null}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.modalView}>
         <CloseModal onPress={() => {onClose(); handleClearInput();}} />
         {showDatePicker && (
@@ -280,6 +282,13 @@ export const CustomModal = ({ visible, onClose, onAdd, onEdit, appointmentData, 
           </View>
           <TextInput
             style={[styles.text, styles.input]}
+            placeholder="Имя клиента"
+            placeholderTextColor={theme === 'dark' ? 'gray' : 'lightgray'}
+            value={clientName}
+            onChangeText={setClientName}
+          />
+          <TextInput
+            style={[styles.text, styles.input]}
             placeholder="Кто принял оплату"
             placeholderTextColor={theme === 'dark' ? 'gray' : 'lightgray'}
             value={person}
@@ -292,13 +301,6 @@ export const CustomModal = ({ visible, onClose, onAdd, onEdit, appointmentData, 
             value={notes}
             onChangeText={setNotes}
             keyboardType="numeric"
-          />
-          <TextInput
-            style={[styles.text, styles.input]}
-            placeholder="Имя клиента"
-            placeholderTextColor={theme === 'dark' ? 'gray' : 'lightgray'}
-            value={clientName}
-            onChangeText={setClientName}
           />
           <TextInput
             style={[styles.text, styles.input]}
@@ -320,6 +322,8 @@ export const CustomModal = ({ visible, onClose, onAdd, onEdit, appointmentData, 
             onClose(); handleClearInput();
           }}/>
         </View>
+        </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </Modal>
   ),
     data: {},
@@ -328,10 +332,15 @@ export const CustomModal = ({ visible, onClose, onAdd, onEdit, appointmentData, 
   };
 };
 
-export const ModalDialog = ({ visible, onClose, onEdit, onDelete }) => {
+export const ModalDialog = ({ visible, onClose, onEdit, onDelete, appointmentData }) => {
   const themeContext = useTheme();
   const { theme } = themeContext;
   const styles = theme === 'dark' ? darkThemeComponents : lightThemeComponents;
+  // Проверка на наличие appointmentData и соответствующих данных
+  const appointment = appointmentData && 
+  appointmentData.workDone &&
+  appointmentData.workDone[appointmentData.selectedDate] &&
+  appointmentData.workDone[appointmentData.selectedDate][appointmentData.selectedIndex];
   return (
     <Modal
       animationType="slide"
@@ -342,10 +351,24 @@ export const ModalDialog = ({ visible, onClose, onEdit, onDelete }) => {
       <View style={styles.modalView}>
         <CloseModal onPress={() => { onClose(); }} />
         <View>
+        {appointment && (
+            <Text style={[styles.text ,{fontSize: 20, lineHeight: 35}]}>
+              {/* Вывод информации о выбранном приеме */}
+              {appointment.formattedDate && <Text>{appointment.formattedDate} {'\n'}</Text>}
+              {appointment.service?.name && <Text>{appointment.service.name} {'\n'}</Text>}
+              {appointment.cost && <Text>Цена: {appointment.cost}€ {'\n'}</Text>}
+              {appointment.paymentMethod && <Text>Метод оплаты: {appointment.paymentMethod} {'\n'}</Text>}
+              {appointment.person && <Text>Кто принял оплату: {appointment.person} {'\n'}</Text>}
+              {appointment.notes && <Text>Чаевые: {appointment.notes} {'\n'}</Text>}
+              {appointment.clientName && <Text>Имя клиента: {appointment.clientName} {'\n'}</Text>}
+              {appointment.comments && <Text>Комментарий: {appointment.comments} {'\n'}</Text>}
+            </Text>
+          )}
+        </View>
+        <View style={{flexDirection: "row", justifyContent: "space-between", width: "100%"}}>
           <ButtonSpecial
             title="Изменить"
             onPress={onEdit}
-            style={{marginVertical: 50 }}
             textStyle={{fontSize: 20}} 
           />
           <ButtonSpecial 

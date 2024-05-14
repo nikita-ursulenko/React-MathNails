@@ -65,7 +65,9 @@ const ExpandableSection = ({ title, children, setSelectedDate, setSelectedIndex,
                 setShowModal(true);
               }}>
                 <View style={{maxWidth: "60%"}}>
-                  <Text style={styles.contentItemText}>{parts[0]}</Text>
+                  <Text style={[styles.contentItemText]}>
+                      {parts[8] ? parts[8] : parts[0]}
+                    </Text>
                 </View>
                   {parts[6] ? 
                   <View style={{ borderBottomWidth: 2, borderColor: "red", alignSelf: "center"}}>
@@ -155,6 +157,7 @@ const EntryScreen = () => {
     console.log('Received data:', data);
     await DataBase.WorkDone.saveDataToDB(data);
     loadWorkDone();
+    
   };
   // Ручное изменение
   const handleEdit = async (updatedData) => {
@@ -214,6 +217,7 @@ const EntryScreen = () => {
         onEdit={() => toggleHandleEditItem(selectedDate, selectedIndex)}
         onDelete={() => handleDeleteItem(selectedDate, selectedIndex)}
         clearInputs={handleClearInput}
+        appointmentData={{ selectedDate, selectedIndex, workDone }}
       />
     </View>
   );

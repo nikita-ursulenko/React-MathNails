@@ -13,6 +13,7 @@ import { ThemeProvider, useTheme } from './context/ThemeProvider';
 import { ProfileProvider } from './context/ProfileContext'; 
 import { darkTheme, lightTheme } from './assets/styles/styles';
 import { ProfileIconWithDescription } from './components/ProfileIconWithDescription';
+import { DataProvider } from './context/DataContext';
 
 const Drawer = createDrawerNavigator();
 
@@ -20,7 +21,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <ProfileProvider>
-        <MainApp />
+        <DataProvider>
+          <MainApp />
+        </DataProvider>
       </ProfileProvider>
     </ThemeProvider>
   );

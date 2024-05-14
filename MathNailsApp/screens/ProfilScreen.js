@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { View, Image, TextInput } from "react-native";
+import { View, Image, TextInput, Alert } from "react-native";
 import { Picker } from '@react-native-picker/picker';
 import { ButtonSpecial } from "../components/components";
 import { useTheme } from "../context/ThemeProvider";
 import { useProfile } from "../context/ProfileContext"; // Импортируем контекст профиля
 import { darkTheme, lightTheme } from "../assets/styles/styles";
+import { useNavigation } from "@react-navigation/native";
 
 const ProfilScreen = () => {
   const { profileData, updateProfileData } = useProfile(); // Используем данные и методы из контекста
@@ -12,6 +13,7 @@ const ProfilScreen = () => {
   const [lastName, setLastName] = useState(profileData.lastName || '');
   const [selectedPercent, setSelectedPercent] = useState(profileData.commissionRate || '50');
   const { theme } = useTheme(); // Тема для стилей
+  const navigation = useNavigation();
   const styles = theme === 'dark' ? darkTheme : lightTheme; // Применяем тему
 
   useEffect(() => {
@@ -27,6 +29,16 @@ const ProfilScreen = () => {
       lastName,
       commissionRate: parseInt(selectedPercent, 10)
     });
+    Alert.alert(
+      'Данные изменены.',
+      '',
+      [
+        {
+          text: 'OK',
+          onPress: () => navigation.navigate('General') // Перенаправляем на главный экран после нажатия на кнопку "OK"
+        }
+      ]
+    );
   };
 
   return (

@@ -45,8 +45,8 @@ const ExpandableSection = ({ data }) => {
           <View style={styles.content}>
             <Text style={styles.contentText}>Выручка: <Text style={{fontWeight: 600}}>{data.cost.toFixed(2)}€</Text></Text>
             <Text style={styles.contentText}>Прибыль: <Text style={{fontWeight: 600}}>{data.earnings.toFixed(2)}€</Text></Text>
-            <Text style={styles.contentText}>Наличный расчет: <Text style={{fontWeight: 600}}>{data.myBar.toFixed(2)}€</Text></Text>
-            <Text style={styles.contentText}>Карточный расчет: <Text style={{fontWeight: 600}}>{data.moneySalon.toFixed(2)}€</Text></Text>
+            <Text style={styles.contentText}>Наличными: <Text style={{fontWeight: 600}}>{data.myBar.toFixed(2)}€</Text></Text>
+            <Text style={styles.contentText}>Картой: <Text style={{fontWeight: 600}}>{data.moneySalon.toFixed(2)}€</Text></Text>
             <Text style={styles.contentText}>{data.debtStatus}: <Text style={{fontWeight: 600}}>{Math.abs(data.debt).toFixed(2)}€</Text></Text>
             <TouchableOpacity onPress={toggleMoreDetails} style={styles.moreDetailsButton}>
                 <MaterialCommunityIcons 
