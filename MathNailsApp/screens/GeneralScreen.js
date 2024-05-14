@@ -10,6 +10,7 @@ import { useTheme } from '../context/ThemeProvider';
 import { darkTheme, lightTheme } from '../assets/styles/styles';
 import EntryScreen from './EntryScreen';
 import { useData } from '../context/DataContext';
+import MonthlyExpandableSection from '../components/MonthlyExpandableSection';
 
 
 moment.locale('ru');
@@ -82,6 +83,24 @@ const getCommissionRate = async () => {
   }
 };
 
+const transformData = (data) => {
+  const transformedData = {};
+  data.forEach(item => {
+      const month = moment(item.date, 'DD.MM.YY').format('MM.YYYY');
+      if (!transformedData[month]) {
+          transformedData[month] = [];
+      }
+      transformedData[month].push(item);
+  });
+
+  const result = Object.keys(transformedData).map(month => ({
+      label: month,
+      days: transformedData[month]
+  }));
+
+  return result;
+};
+
 const MainScreen = () => {
   const { data, updateData } = useData();
   const [datesData, setDatesData] = useState([]);
@@ -100,20 +119,25 @@ const MainScreen = () => {
     setRefreshing(false);
   };
 
-  
+const transformedData = transformData(data);
+
   return (
-    <View style={styles.generalView}>
-      <EntryScreen reloadMainScreen={onRefresh} />
-      <FlatList
-        style={{ height: '100%' }}
-        data={data}
-        keyExtractor={item => item.date}
-        renderItem={({ item }) => <ExpandableSection data={item} />}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#9Bd35A', '#689F38']} />
-        }
-      />
-    </View>
+    <View>
+            <EntryScreen reloadMainScreen={onRefresh} />
+            {transformedData.length > 0 ? (
+                <FlatList
+                    style={{ height: '100%' }}
+                    data={transformedData}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={({ item }) => <MonthlyExpandableSection monthlyData={item} />}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#9Bd35A', '#689F38']} />
+                    }
+                />
+            ) : (
+                <Text style={{textAlign: "center"}}>Нет данных для отображения</Text>
+            )}
+        </View>
   );
 };
 

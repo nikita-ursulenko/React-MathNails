@@ -333,6 +333,7 @@ export const CustomModal = ({ visible, onClose, onAdd, onEdit, appointmentData, 
 };
 
 export const ModalDialog = ({ visible, onClose, onEdit, onDelete, appointmentData }) => {
+  
   const themeContext = useTheme();
   const { theme } = themeContext;
   const styles = theme === 'dark' ? darkThemeComponents : lightThemeComponents;

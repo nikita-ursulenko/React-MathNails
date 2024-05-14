@@ -80,8 +80,13 @@ export const components = StyleSheet.create({
     },
   });
 
+
+
+
+
 export const lightThemeComponents = StyleSheet.create({
     ...components,
+
 });
 
 export const darkThemeComponents = StyleSheet.create({
