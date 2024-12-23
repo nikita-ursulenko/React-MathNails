@@ -104,4 +104,4 @@ expo start --clear
 Если у вас возникли вопросы или трудности с установкой, свяжитесь с автором проекта:  
 - **GitHub**: [Nikita Ursulenko](https://github.com/nikita-ursulenko)  
 - **Email**: [nikita.ursulenco@gmail.com](mailto:nikita.ursulenco@gmail.com)
-"""
+
